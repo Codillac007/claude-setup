@@ -4,9 +4,10 @@
 # claude-mem plugin-i, headroom (MCP), msitarzewski/agency-agents.
 # Hər addım müstəqildir: biri uğursuz olsa, digərləri davam edir.
 
-LOG="$HOME/claude-setup.log"
+LOG=/root/claude-setup.log
 exec > >(tee -a "$LOG") 2>&1
 echo "=== claude-setup $(date '+%F %T') ==="
+echo "user=$(id -un) HOME=$HOME PWD=$PWD"
 
 # Setup mərhələsində PATH qısa ola bilər: məlum yerləri əlavə et.
 for d in /opt/node22/bin /opt/node*/bin /usr/local/bin "$HOME/.local/bin" "$HOME/.bun/bin"; do
@@ -97,5 +98,6 @@ When a task clearly fits one of these specialists, delegate it to (or adopt the 
 MD
 fi
 
+ls -la "$HOME/.claude" | head -20
 echo; echo "==> Hazırdır."
 exit 0
