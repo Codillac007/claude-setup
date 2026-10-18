@@ -4,42 +4,55 @@
 # claude-mem plugin-i, headroom (MCP), msitarzewski/agency-agents.
 # Hər addım müstəqildir: biri uğursuz olsa, digərləri davam edir.
 
-export PATH="$HOME/.local/bin:$HOME/.bun/bin:$PATH"
+LOG="$HOME/claude-setup.log"
+exec > >(tee -a "$LOG") 2>&1
+echo "=== claude-setup $(date '+%F %T') ==="
+
+# Setup mərhələsində PATH qısa ola bilər: məlum yerləri əlavə et.
+for d in /opt/node22/bin /opt/node*/bin /usr/local/bin "$HOME/.local/bin" "$HOME/.bun/bin"; do
+  [ -d "$d" ] && PATH="$d:$PATH"
+done
+export PATH
+for t in node npx git jq uv claude; do
+  printf '%-6s %s\n' "$t" "$(command -v $t || echo 'YOXDUR')"
+done
+command -v uv >/dev/null || { python3 -m pip install -q --user uv >/dev/null 2>&1 || python3 -m pip install -q --user --break-system-packages uv >/dev/null 2>&1; export PATH="$HOME/.local/bin:$PATH"; }
 OBS_WORKSPACE="${OBS_WORKSPACE:-/home/user}"
 AGENCY_COMMIT=652b2692f8d8ec2b1f1a38e559073e287dfdc469   # təhlükəsizlik yoxlamasından keçmiş commit
 
 step() { echo; echo "==> $1"; }
 fail() { echo "!! $1 alınmadı (davam edirəm)"; }
+run() { "$@" > /tmp/claude-setup-step.log 2>&1 || { tail -5 /tmp/claude-setup-step.log; return 1; }; }
 
 mkdir -p "$HOME/.claude/hooks" "$HOME/.claude/agents"
 [ -f "$HOME/.claude/settings.json" ] || echo '{}' > "$HOME/.claude/settings.json"
 
 step "Skill-lər (find-skills, tradermonty, task-observer)"
-npx -y skills add vercel-labs/skills --skill find-skills -g -y >/dev/null 2>&1 || fail find-skills
-npx -y skills add tradermonty/claude-trading-skills -g -y >/dev/null 2>&1 || fail tradermonty
-npx -y skills add rebelytics/one-skill-to-rule-them-all --skill task-observer -g -y >/dev/null 2>&1 || fail task-observer
+run npx -y skills add vercel-labs/skills --skill find-skills -g -y || fail find-skills
+run npx -y skills add tradermonty/claude-trading-skills -g -y || fail tradermonty
+run npx -y skills add rebelytics/one-skill-to-rule-them-all --skill task-observer -g -y || fail task-observer
 ls -d "$HOME/.claude/skills"/*/ 2>/dev/null | wc -l | xargs echo "skill sayı:"
 
 step "claude-mem plugin-i"
 {
-  claude plugin marketplace add thedotmack/claude-mem &&
-  claude plugin install claude-mem@thedotmack &&
+  run claude plugin marketplace add thedotmack/claude-mem &&
+  run claude plugin install claude-mem@thedotmack &&
   root=$(ls -d "$HOME/.claude/plugins/cache/thedotmack/claude-mem"/*/ | sort -V | tail -1) &&
-  CLAUDE_PLUGIN_ROOT="${root%/}" node "$root/scripts/ensure-launcher.cjs"
-} >/dev/null 2>&1 || fail claude-mem
+  CLAUDE_PLUGIN_ROOT="${root%/}" run node "$root/scripts/ensure-launcher.cjs"
+} || fail claude-mem
 
 step "headroom (MCP)"
 {
-  uv tool install --python 3.13 "headroom-ai[all]" &&
-  headroom mcp install
-} >/dev/null 2>&1 || fail headroom
+  run uv tool install --python 3.13 "headroom-ai[all]" &&
+  run headroom mcp install
+} || fail headroom
 
 step "agency-agents ($AGENCY_COMMIT)"
 tmp=$(mktemp -d)
 if git -C "$tmp" init -q &&
    git -C "$tmp" fetch -q --depth 1 https://github.com/msitarzewski/agency-agents.git "$AGENCY_COMMIT" &&
    git -C "$tmp" checkout -q FETCH_HEAD; then
-  bash "$tmp/scripts/install.sh" --tool claude-code --no-interactive >/dev/null 2>&1 || fail "agency-agents install"
+  run bash "$tmp/scripts/install.sh" --tool claude-code --no-interactive || fail "agency-agents install"
 else
   fail "agency-agents clone"
 fi
