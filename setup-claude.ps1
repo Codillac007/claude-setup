@@ -28,7 +28,8 @@ function Run {
   $cmd = $args[0]; $rest = @($args | Select-Object -Skip 1)
   $global:LASTEXITCODE = 0
   $out = & $cmd @rest 2>&1
-  if (-not $? -or $LASTEXITCODE -ne 0) { $out | Select-Object -Last 5 | ForEach-Object { Write-Host "   $_" }; return $false }
+  # Yalnız çıxış kodu: Windows PowerShell 5.1-də stderr-ə yazan uğurlu əmrlər də $?-ı false edir.
+  if ($LASTEXITCODE -ne 0) { $out | Select-Object -Last 5 | ForEach-Object { Write-Host "   $_" }; return $false }
   return $true
 }
 function Write-Utf8($path, $text) { [IO.File]::WriteAllText($path, $text, $Utf8NoBom) }
@@ -61,7 +62,14 @@ if (-not (Run npx -y skills add rebelytics/one-skill-to-rule-them-all --skill ta
 Write-Host ("skill sayı: {0}" -f @(Get-ChildItem (Join-Path $ClaudeDir 'skills') -Directory -ErrorAction SilentlyContinue).Count)
 
 Step 'claude-mem plugin-i'
-if ((Run claude plugin marketplace add thedotmack/claude-mem) -and (Run claude plugin install claude-mem@thedotmack)) {
+# Yarımçıq qalmış əvvəlki cəhdin müvəqqəti qovluğunu təmizlə (Windows-da EBUSY səbəbi).
+Get-ChildItem (Join-Path $ClaudeDir 'plugins\marketplaces') -Directory -Filter '*..clone' -ErrorAction SilentlyContinue |
+  ForEach-Object {
+    Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+    if (Test-Path $_.FullName) { Fail "$($_.FullName) silinmədi (kilidlidir) — kompüteri yenidən başladıb skripti təkrar işə salın" }
+  }
+$mpReady = ((claude plugin marketplace list 2>&1 | Out-String) -match 'thedotmack') -or (Run claude plugin marketplace add thedotmack/claude-mem)
+if ($mpReady -and (Run claude plugin install claude-mem@thedotmack)) {
   $root = Get-ChildItem (Join-Path $ClaudeDir 'plugins\cache\thedotmack\claude-mem') -Directory -ErrorAction SilentlyContinue |
           Sort-Object { try { [version]($_.Name -replace '-.*$', '') } catch { [version]'0.0' } } | Select-Object -Last 1
   if ($root) {
