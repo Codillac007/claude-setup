@@ -23,8 +23,12 @@ function Refresh-Path {
 }
 # Xarici əmri işlət; uğursuz olsa çıxışın son sətirlərini göstər.
 function Run {
-  $out = & $args[0] @($args | Select-Object -Skip 1) 2>&1
-  if ($LASTEXITCODE -ne 0) { $out | Select-Object -Last 5 | ForEach-Object { Write-Host "   $_" }; return $false }
+  # @rest massiv kimi splat olunur: .ps1 (npm.ps1, npx.ps1) və .exe əmrləri arqumentləri ayrı-ayrı alır.
+  # @(...) vacibdir: tək arqument massiv olmasa, sətir hərf-hərf splat olunur.
+  $cmd = $args[0]; $rest = @($args | Select-Object -Skip 1)
+  $global:LASTEXITCODE = 0
+  $out = & $cmd @rest 2>&1
+  if (-not $? -or $LASTEXITCODE -ne 0) { $out | Select-Object -Last 5 | ForEach-Object { Write-Host "   $_" }; return $false }
   return $true
 }
 function Write-Utf8($path, $text) { [IO.File]::WriteAllText($path, $text, $Utf8NoBom) }
