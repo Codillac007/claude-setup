@@ -2,7 +2,7 @@
 
 Writes:
   smac-data/latest.json      one summary row per symbol (core list + S&P 500 + extra.txt)
-  smac-data/bars/<SYM>.csv   5y daily OHLCV for the core list (tickers.txt) and extra.txt
+  smac-data/bars/<SYM>.csv   daily OHLCV: 5y for tickers.txt/extra.txt, 1y for the rest of the S&P 500
 Source: Yahoo Finance chart API; Stooq CSV as fallback for stocks.
 """
 import csv, datetime as dt, io, json, os, sys, time, urllib.parse, urllib.request
@@ -97,7 +97,7 @@ def main():
             s = summary(rows, keep)
             s["source"] = src
             result[sym] = s
-            if keep:
+            if True:  # 5y bars for the core list, 1y for the S&P 500
                 fn = sym.replace("^", "_").replace("=", "_")
                 with open(os.path.join(HERE, "bars", fn + ".csv"), "w", newline="") as f:
                     w = csv.writer(f)
