@@ -1,8 +1,8 @@
 name: SMAC price feed
 on:
   schedule:
-    - cron: "20 21 * * 1-5"   # 21:20 UTC = 01:20 Baku, after the US close
-    - cron: "10 22 * * 1-5"   # backup run, 02:10 Baku
+    - cron: "7 21 * * 1-5"    # 21:07 UTC = 01:07 Baku, right after the US close (GitHub may start it later)
+    - cron: "41 21 * * 1-5"   # backup run, 01:41 Baku
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

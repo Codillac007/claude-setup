@@ -17,10 +17,14 @@ def read_list(name):
         return []
     return [l.strip() for l in open(p) if l.strip() and not l.startswith("#")]
 
-def get(url, timeout=25):
+def get(url, timeout=10):
     return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout).read()
 
+YAHOO_FAILS = [0]
+
 def yahoo(sym, rng):
+    if YAHOO_FAILS[0] >= 15:  # Yahoo is throttling this runner: stop wasting time on it
+        return None, None
     for host in ("query1", "query2"):
         try:
             u = f"https://{host}.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={rng}&interval=1d"
@@ -33,16 +37,25 @@ def yahoo(sym, rng):
                 d = dt.datetime.utcfromtimestamp(t + off).date().isoformat()
                 rows.append([d, o, h, l, c, v or 0])
             if rows:
+                YAHOO_FAILS[0] = 0
                 return rows, "yahoo"
         except Exception:
-            time.sleep(1)
+            pass
+    YAHOO_FAILS[0] += 1
     return None, None
 
+STOOQ_MAP = {"^GSPC": "^spx", "^IXIC": "^ndq", "^DJI": "^dji", "^VIX": "^vix", "ES=F": "es.f", "NQ=F": "nq.f",
+             "CL=F": "cl.f", "BZ=F": "cb.f", "GC=F": "gc.f", "HG=F": "hg.f", "DX-Y.NYB": "dx.f"}
+
 def stooq(sym):
-    if sym.startswith("^") or "=" in sym or "." in sym:
+    if sym in STOOQ_MAP:
+        code = STOOQ_MAP[sym]
+    elif sym.startswith("^") or "=" in sym or "." in sym:
         return None, None
+    else:
+        code = sym.lower().replace("-", ".") + ".us"
     try:
-        txt = get(f"https://stooq.com/q/d/l/?s={sym.lower()}.us&i=d").decode()
+        txt = get(f"https://stooq.com/q/d/l/?s={code}&i=d").decode()
         rows = [[r["Date"], float(r["Open"]), float(r["High"]), float(r["Low"]), float(r["Close"]), int(float(r.get("Volume") or 0))]
                 for r in csv.DictReader(io.StringIO(txt)) if r.get("Close") not in (None, "", "N/D")]
         return (rows[-1300:], "stooq") if rows else (None, None)
@@ -80,16 +93,28 @@ def main():
     os.makedirs(os.path.join(HERE, "bars"), exist_ok=True)
     result, errors = {}, []
 
+    t0 = time.time()
+
     def work(sym):
         keep = sym in full
-        rows, src = yahoo(sym, "5y" if keep else "1y")
-        if not rows:
+        if time.time() - t0 > 13 * 60:  # hard budget: write what we have
+            return sym, None, None, keep
+        plain = not (sym.startswith("^") or "=" in sym or "." in sym)
+        if plain and not keep:  # broad S&P list: Stooq first (one fast CSV), Yahoo as backup
             rows, src = stooq(sym)
+            if rows:
+                rows = rows[-260:]
+            else:
+                rows, src = yahoo(sym, "1y")
+        else:
+            rows, src = yahoo(sym, "5y" if keep else "1y")
+            if not rows:
+                rows, src = stooq(sym)
         if not rows:
-            return sym, None, None, None
+            return sym, None, None, keep
         return sym, rows, src, keep
 
-    with ThreadPoolExecutor(8) as ex:
+    with ThreadPoolExecutor(16) as ex:
         for sym, rows, src, keep in ex.map(work, full + broad):
             if not rows:
                 errors.append(sym)
@@ -112,7 +137,7 @@ def main():
            "symbols": result}
     with open(os.path.join(HERE, "latest.json"), "w") as f:
         json.dump(out, f, separators=(",", ":"))
-    print(f"session {gspc}: {len(result)} symbols, {len(errors)} errors: {errors[:20]}")
+    print(f"session {gspc}: {len(result)} symbols, {len(errors)} errors: {errors[:20]}, yahoo_fail_streak={YAHOO_FAILS[0]}, {int(time.time()-t0)}s")
     if len(result) < 30:
         sys.exit(1)
 
