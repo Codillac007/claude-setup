@@ -1,0 +1,21 @@
+{
+ "started_utc": "2026-11-07T05:39:12Z",
+ "steps": [
+  "core 55, s&p 494",
+  "yfinance 5y: 54/55 in 6s",
+  "yfinance 1y: 494/494 in 38s",
+  "after fallbacks: 548/549 in 39s"
+ ],
+ "errors": {
+  "yahoo_chart": [
+   "BBAI: HTTPError: HTTP Error 429: Too Many Requests",
+   "BBAI: HTTPError: HTTP Error 429: Too Many Requests"
+  ]
+ },
+ "ok": true,
+ "session_date": "2026-11-06",
+ "count": 548,
+ "missing": 1,
+ "seconds": 40,
+ "finished_utc": "2026-11-07T05:39:52Z"
+}
