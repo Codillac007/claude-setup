@@ -1,21 +1,16 @@
 {
- "started_utc": "2026-11-07T05:39:12Z",
+ "started_utc": "2026-11-09T21:50:24Z",
  "steps": [
   "core 55, s&p 494",
-  "yfinance 5y: 54/55 in 6s",
-  "yfinance 1y: 494/494 in 38s",
-  "after fallbacks: 548/549 in 39s"
+  "yfinance 5y: 55/55 in 7s",
+  "yfinance 1y: 494/494 in 48s",
+  "after fallbacks: 549/549 in 48s"
  ],
- "errors": {
-  "yahoo_chart": [
-   "BBAI: HTTPError: HTTP Error 429: Too Many Requests",
-   "BBAI: HTTPError: HTTP Error 429: Too Many Requests"
-  ]
- },
+ "errors": {},
  "ok": true,
- "session_date": "2026-11-06",
- "count": 548,
- "missing": 1,
- "seconds": 40,
- "finished_utc": "2026-11-07T05:39:52Z"
+ "session_date": "2026-11-09",
+ "count": 549,
+ "missing": 0,
+ "seconds": 49,
+ "finished_utc": "2026-11-09T21:51:13Z"
 }
