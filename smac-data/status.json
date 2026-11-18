@@ -1,21 +1,21 @@
 {
- "started_utc": "2026-11-16T22:26:25Z",
+ "started_utc": "2026-11-18T02:51:50Z",
  "steps": [
   "core 55, s&p 494",
   "yfinance 5y: 54/55 in 6s",
-  "yfinance 1y: 494/494 in 41s",
-  "after fallbacks: 548/549 in 41s"
+  "yfinance 1y: 494/494 in 48s",
+  "after fallbacks: 548/549 in 48s"
  ],
  "errors": {
   "yahoo_chart": [
-   "^VIX: HTTPError: HTTP Error 429: Too Many Requests",
-   "^VIX: HTTPError: HTTP Error 429: Too Many Requests"
+   "FIGS: HTTPError: HTTP Error 429: Too Many Requests",
+   "FIGS: HTTPError: HTTP Error 429: Too Many Requests"
   ]
  },
  "ok": true,
- "session_date": "2026-11-16",
+ "session_date": "2026-11-17",
  "count": 548,
  "missing": 1,
- "seconds": 42,
- "finished_utc": "2026-11-16T22:27:07Z"
+ "seconds": 49,
+ "finished_utc": "2026-11-18T02:52:40Z"
 }
