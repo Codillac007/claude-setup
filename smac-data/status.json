@@ -1,16 +1,21 @@
 {
- "started_utc": "2026-11-19T02:47:43Z",
+ "started_utc": "2026-11-20T02:14:44Z",
  "steps": [
   "core 55, s&p 494",
-  "yfinance 5y: 55/55 in 5s",
-  "yfinance 1y: 494/494 in 31s",
-  "after fallbacks: 549/549 in 31s"
+  "yfinance 5y: 54/55 in 5s",
+  "yfinance 1y: 494/494 in 38s",
+  "after fallbacks: 548/549 in 38s"
  ],
- "errors": {},
+ "errors": {
+  "yahoo_chart": [
+   "TSLA: HTTPError: HTTP Error 429: Too Many Requests",
+   "TSLA: HTTPError: HTTP Error 429: Too Many Requests"
+  ]
+ },
  "ok": true,
- "session_date": "2026-11-18",
- "count": 549,
- "missing": 0,
- "seconds": 32,
- "finished_utc": "2026-11-19T02:48:15Z"
+ "session_date": "2026-11-19",
+ "count": 548,
+ "missing": 1,
+ "seconds": 39,
+ "finished_utc": "2026-11-20T02:15:24Z"
 }
