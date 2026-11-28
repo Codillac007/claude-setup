@@ -1,16 +1,16 @@
 {
- "started_utc": "2026-11-27T03:46:38Z",
+ "started_utc": "2026-11-28T03:14:20Z",
  "steps": [
   "core 55, s&p 494",
-  "yfinance 5y: 55/55 in 6s",
-  "yfinance 1y: 494/494 in 43s",
-  "after fallbacks: 549/549 in 43s"
+  "yfinance 5y: 55/55 in 5s",
+  "yfinance 1y: 494/494 in 33s",
+  "after fallbacks: 549/549 in 33s"
  ],
  "errors": {},
  "ok": true,
- "session_date": "2026-11-25",
+ "session_date": "2026-11-27",
  "count": 549,
  "missing": 0,
- "seconds": 43,
- "finished_utc": "2026-11-27T03:47:22Z"
+ "seconds": 34,
+ "finished_utc": "2026-11-28T03:14:54Z"
 }
